@@ -11,13 +11,30 @@ class FraployService(
 ) {
     private val frappeCloudService = FrappeCloudService(client = client, credentials = credentials)
 
-    suspend fun update(source: FraployConfig.Source): DeployName {
+    suspend fun update(source: FraployConfig.Source): DeployName? {
         val releaseGroupName = frappeCloudService.getReleaseGroupName(source.releaseGroupTitle)
         val apps = frappeCloudService.getReleaseGroup(releaseGroupName)
         val sites = frappeCloudService.getSites(releaseGroupName)
 
         val appUpdates = apps.getUpdates(source.updateRequests)
         val siteUpdates = sites.map { it.toUpdate() }.toSet()
+
+        if (appUpdates.isEmpty()) {
+            println("all apps are already up-to-date. No deployment necessary.")
+            return null
+        } else {
+            println("App updates:")
+            val maxAppNameLength = appUpdates.maxOf { it.app.name.length }
+            appUpdates.forEach { println("${it.app.name.padStart(maxAppNameLength + 4)} -> ${it.hash}") }
+            println()
+        }
+
+        println("Sites at $releaseGroupName (${source.releaseGroupTitle}):")
+        if (siteUpdates.isEmpty())
+            println("<no-sites>")
+        else
+            siteUpdates.forEach { println("    ${it.name}") }
+        println()
 
         val deployName = frappeCloudService.deployAndUpdate(
             releaseGroupName = releaseGroupName,
@@ -66,7 +83,7 @@ class FraployService(
 
         suspend fun run(config: FraployConfig) {
             val service = FraployService(credentials = config.credentials)
-            val deployName = service.update(source = config.source)
+            val deployName = service.update(source = config.source) ?: return
             service.blocking(deployName = deployName, blockingConfig = config.blocking)
         }
     }

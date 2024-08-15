@@ -18,13 +18,3 @@ open class ValueClassSerializer<T : ValueClass>(
     override fun serialize(encoder: Encoder, value: T) = encoder.encodeString(value.name)
     override fun deserialize(decoder: Decoder): T = kClass.primaryConstructor!!.call(decoder.decodeString())
 }
-
-object ServerBenchSerializer : ValueClassSerializer<ServerBench>(ServerBench::class)
-object BenchSerializer : ValueClassSerializer<ReleaseGroupName>(ReleaseGroupName::class)
-object AppNameSerializer : ValueClassSerializer<AppName>(AppName::class)
-object AppSourceSerializer : ValueClassSerializer<AppSource>(AppSource::class)
-object AppReleaseNameSerializer : ValueClassSerializer<AppReleaseName>(AppReleaseName::class)
-object GitCommitSerializer : ValueClassSerializer<GitCommit>(GitCommit::class)
-object GitTagSerializer : ValueClassSerializer<GitTag>(GitTag::class)
-object SiteNameSerializer : ValueClassSerializer<SiteName>(SiteName::class)
-object ServerNameSerializer : ValueClassSerializer<ServerName>(ServerName::class)
